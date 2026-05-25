@@ -3,22 +3,22 @@ using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Jellyfin.Plugin.Yuorself.Controllers;
+namespace Jellyfin.Plugin.ExpressiveJelly.Controllers;
 
 [ApiController]
-[Route("Yuorself")]
+[Route("ExpressiveJelly")]
 public sealed class ThemeController : ControllerBase
 {
     [HttpGet("theme.css")]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult GetCss()
     {
-        if (YuorselfPlugin.Instance?.Configuration.Enabled != true)
+        if (ExpressiveJellyPlugin.Instance?.Configuration.Enabled != true)
         {
             return NotFound();
         }
 
-        string css = ReadEmbeddedText("Jellyfin.Plugin.Yuorself.Resources.jellyfinexpressive.css");
+        string css = ReadEmbeddedText("Jellyfin.Plugin.ExpressiveJelly.Resources.jellyfinexpressive.css");
         return Content(css, "text/css; charset=utf-8");
     }
 
@@ -26,12 +26,12 @@ public sealed class ThemeController : ControllerBase
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult GetJs()
     {
-        if (YuorselfPlugin.Instance?.Configuration.Enabled != true)
+        if (ExpressiveJellyPlugin.Instance?.Configuration.Enabled != true)
         {
             return NotFound();
         }
 
-        string js = ReadEmbeddedText("Jellyfin.Plugin.Yuorself.Resources.jellyfinexpressive.js");
+        string js = ReadEmbeddedText("Jellyfin.Plugin.ExpressiveJelly.Resources.jellyfinexpressive.js");
         return Content(js, "application/javascript; charset=utf-8");
     }
 

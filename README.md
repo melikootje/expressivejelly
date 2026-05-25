@@ -1,6 +1,6 @@
-# Yuorself (Jellyfin Web Theme Injector)
+# ExpressiveJelly (Jellyfin Web Theme Injector)
 
-Server plugin for Jellyfin **10.11.8** that injects a Material You Expressive-inspired theme (CSS + optional JS motion) into **Jellyfin Web clients** by registering an `index.html` transformation with **IAmParadox’s File Transformation** plugin.
+Server plugin for Jellyfin **10.11.8** that injects a Material You Expressive-inspired theme (CSS + JS motion) into **Jellyfin Web clients** by registering an `index.html` transformation with **IAmParadox’s File Transformation** plugin.
 
 Includes:
 
@@ -16,22 +16,21 @@ Includes:
 ## Install
 
 1. Install **File Transformation** plugin.
-2. Install this plugin (`Yuorself`) into Jellyfin.
+2. Install this plugin (`ExpressiveJelly`) into Jellyfin.
 3. Restart Jellyfin.
 4. Hard refresh the web client (`Ctrl+Shift+R`).
 
 ## What it injects
 
-- A stylesheet: `./Yuorself/theme.css`
-- A script: `./Yuorself/theme.js`
+- A stylesheet: `./ExpressiveJelly/theme.css`
+- A script: `./ExpressiveJelly/theme.js`
 
 These are served by the plugin itself and only loaded by web clients (because the injection is done in `index.html`).
 
 ## Build
 
-`dotnet build /Users/meliko/jellyfinexpressive/Yuorself.sln -c Release`
+`dotnet build /Users/meliko/jellyfinexpressive/ExpressiveJelly.sln -c Release`
 
 The plugin DLL lands at:
 
-`/Users/meliko/jellyfinexpressive/Jellyfin.Plugin.Yuorself/bin/Release/net9.0/Jellyfin.Plugin.Yuorself.dll`
-
+`/Users/meliko/jellyfinexpressive/Jellyfin.Plugin.ExpressiveJelly/bin/Release/net9.0/Jellyfin.Plugin.ExpressiveJelly.dll`

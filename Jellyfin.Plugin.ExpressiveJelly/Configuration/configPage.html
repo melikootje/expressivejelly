@@ -3,19 +3,25 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Yuorself</title>
+  <title>ExpressiveJelly</title>
 </head>
 <body>
 <div class="content-primary">
   <div class="verticalSection">
     <div class="sectionTitleContainer">
-      <h2 class="sectionTitle">Yuorself</h2>
+      <h2 class="sectionTitle">ExpressiveJelly</h2>
     </div>
     <p>This plugin injects a CSS + JS theme into Jellyfin Web clients by registering an <strong>index.html</strong> transformation with IAmParadox’s File Transformation plugin.</p>
     <div class="checkboxContainer">
       <label class="checkboxLabel">
         <input is="emby-checkbox" class="chkEnabled" type="checkbox"/>
         <span>Enabled</span>
+      </label>
+    </div>
+    <div class="checkboxContainer">
+      <label class="checkboxLabel">
+        <input is="emby-checkbox" class="chkDynamic" type="checkbox"/>
+        <span>Dynamic theming (artwork-based)</span>
       </label>
     </div>
     <div class="fieldDescription">Changes apply after a hard refresh (Ctrl+Shift+R).</div>
@@ -25,24 +31,27 @@
   (function () {
     const pluginId = '2c76c109-0d9b-4375-80fe-522706044e39';
     const chk = document.querySelector('.chkEnabled');
+    const chkDyn = document.querySelector('.chkDynamic');
 
     function load() {
       Dashboard.getPluginConfiguration(pluginId).then(function (config) {
         chk.checked = !!config.Enabled;
+        chkDyn.checked = config.DynamicThemingEnabled !== false;
       });
     }
 
     function save() {
       Dashboard.getPluginConfiguration(pluginId).then(function (config) {
         config.Enabled = chk.checked;
+        config.DynamicThemingEnabled = chkDyn.checked;
         return Dashboard.updatePluginConfiguration(pluginId, config);
       });
     }
 
     chk.addEventListener('change', save);
+    chkDyn.addEventListener('change', save);
     load();
   })();
 </script>
 </body>
 </html>
-

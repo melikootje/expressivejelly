@@ -4,12 +4,12 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Plugin.Yuorself.Helpers;
+using Jellyfin.Plugin.ExpressiveJelly.Helpers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
-namespace Jellyfin.Plugin.Yuorself.Services;
+namespace Jellyfin.Plugin.ExpressiveJelly.Services;
 
 public sealed class StartupService : IHostedService
 {
@@ -22,9 +22,9 @@ public sealed class StartupService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        if (YuorselfPlugin.Instance?.Configuration.Enabled != true)
+        if (ExpressiveJellyPlugin.Instance?.Configuration.Enabled != true)
         {
-            _logger.LogInformation("Yuorself is disabled; skipping web injection registration.");
+            _logger.LogInformation("ExpressiveJelly is disabled; skipping web injection registration.");
             return Task.CompletedTask;
         }
 
@@ -67,7 +67,7 @@ public sealed class StartupService : IHostedService
 
             JObject payload = new JObject
             {
-                ["id"] = YuorselfPlugin.Instance!.Id,
+                ["id"] = ExpressiveJellyPlugin.Instance!.Id,
                 ["fileNamePattern"] = "index.html",
                 ["transformationEndpoint"] = "/",
                 ["callbackAssembly"] = typeof(IndexHtmlPatch).Assembly.FullName,
@@ -76,11 +76,11 @@ public sealed class StartupService : IHostedService
             };
 
             registerMethod.Invoke(null, new object?[] { payload });
-            logger.LogInformation("Registered index.html transformation for Yuorself web injection.");
+            logger.LogInformation("Registered index.html transformation for ExpressiveJelly web injection.");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to register File Transformation for Yuorself.");
+            logger.LogError(ex, "Failed to register File Transformation for ExpressiveJelly.");
         }
     }
 }

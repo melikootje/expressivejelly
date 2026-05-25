@@ -1,4 +1,4 @@
-/* This file is embedded and served by /Yuorself/theme.css
+/* This file is embedded and served by /ExpressiveJelly/theme.css
    Source is derived from dist/jellyfinexpressive.css in this repo.
 */
 
@@ -285,4 +285,3 @@ input[type="range"],
   from{ transform: scaleY(1); }
   to{ transform: scaleY(1.45); }
 }
-

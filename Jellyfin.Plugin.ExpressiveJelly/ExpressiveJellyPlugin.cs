@@ -1,24 +1,24 @@
 using System;
 using System.Collections.Generic;
-using Jellyfin.Plugin.Yuorself.Configuration;
+using Jellyfin.Plugin.ExpressiveJelly.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
-namespace Jellyfin.Plugin.Yuorself;
+namespace Jellyfin.Plugin.ExpressiveJelly;
 
-public sealed class YuorselfPlugin : BasePlugin<PluginConfiguration>, IHasWebPages
+public sealed class ExpressiveJellyPlugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
-    public static YuorselfPlugin? Instance { get; private set; }
+    public static ExpressiveJellyPlugin? Instance { get; private set; }
 
-    public YuorselfPlugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
+    public ExpressiveJellyPlugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
         : base(applicationPaths, xmlSerializer)
     {
         Instance = this;
     }
 
-    public override string Name => "Yuorself";
+    public override string Name => "ExpressiveJelly";
 
     public override Guid Id => new("2c76c109-0d9b-4375-80fe-522706044e39");
 

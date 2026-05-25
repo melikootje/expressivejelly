@@ -1,13 +1,23 @@
-// JellyfinExpressive companion script
-// - Adds a "squiggly" progress bar overlay while video is buffering/loading
-// - Leaves the stock Jellyfin UI intact (best-effort; Jellyfin DOM varies by client/version)
+// This file is embedded and served by /ExpressiveJelly/theme.js
+// Source is derived from dist/jellyfinexpressive.user.js in this repo.
 (() => {
-  // Dynamic theming (artwork-based) for the CSS variables:
-  // - --jfx-accent
-  // - --jfx-accent2
-  // - --jfx-accent3
-  // Enabled by default for the userscript build.
   const BAR_CLASS = "jfx-squigglebar";
+  const DYN_ATTR = "data-jfx-dynamic";
+
+  function getDynamicThemingEnabled() {
+    try {
+      const script = Array.from(document.scripts).find((s) =>
+        typeof s.src === "string" && s.src.includes("/ExpressiveJelly/theme.js")
+      );
+      if (!script) return true;
+      const u = new URL(script.src, location.href);
+      const dyn = u.searchParams.get("dyn");
+      if (dyn === null) return true;
+      return dyn !== "0";
+    } catch {
+      return true;
+    }
+  }
 
   function ensureSvgFilterHost(root) {
     if (root.querySelector("#jfx-squiggle-filters")) return;
@@ -33,7 +43,6 @@
   }
 
   function findOverlayHostForVideo(videoEl) {
-    // Walk up until we find a reasonably sized container.
     let el = videoEl;
     for (let i = 0; i < 8 && el; i++) {
       const style = getComputedStyle(el);
@@ -47,7 +56,6 @@
     let bar = host.querySelector(`:scope > .${BAR_CLASS}`);
     if (bar) return bar;
 
-    // Ensure the host is positionable.
     const hostStyle = getComputedStyle(host);
     if (hostStyle.position === "static") host.style.position = "relative";
 
@@ -94,8 +102,6 @@
       setBarProgress(bar, (t / d) * 100);
     };
 
-    // Buffering/loading
-    // Visible during playback; morphs into squiggle while buffering.
     const onWaiting = () => show("buffering");
     const onStalled = () => show("buffering");
     const onSeeking = () => show("buffering");
@@ -117,7 +123,6 @@
     videoEl.addEventListener("pause", onPause);
     videoEl.addEventListener("ended", onEnded);
 
-    // Initial state
     updateProgress();
     show("normal");
   }
@@ -126,12 +131,17 @@
     document.querySelectorAll("video").forEach(attachToVideo);
   }
 
-  // Initial scan + keep watching for new video nodes (navigation in SPA clients).
   scan();
   const mo = new MutationObserver(() => scan());
   mo.observe(document.documentElement, { subtree: true, childList: true });
 
+  // Dynamic theming (Kaleidochromic-style "accent variables", but driven by current item artwork)
+  const dynamicEnabled = getDynamicThemingEnabled();
+  if (!dynamicEnabled) return;
+
   const root = document.documentElement;
+  if (!root.hasAttribute(DYN_ATTR)) root.setAttribute(DYN_ATTR, "on");
+
   const baseAccent = getComputedStyle(root).getPropertyValue("--jfx-accent").trim() || "#7ddcff";
   const baseAccent2 = getComputedStyle(root).getPropertyValue("--jfx-accent2").trim() || "#c4b5ff";
   const baseAccent3 = getComputedStyle(root).getPropertyValue("--jfx-accent3").trim() || "#ff6bd6";
@@ -204,7 +214,7 @@
 
   function extractUrl(cssBackgroundImage) {
     if (!cssBackgroundImage || cssBackgroundImage === "none") return null;
-    const m = cssBackgroundImage.match(/url\\((['\"]?)(.*?)\\1\\)/i);
+    const m = cssBackgroundImage.match(/url\((['"]?)(.*?)\1\)/i);
     if (!m) return null;
     return m[2];
   }
@@ -226,6 +236,7 @@
       if (url) return url;
     }
 
+    // Fallback: look for any element with a Jellyfin Items image.
     const els = Array.from(document.querySelectorAll("*")).slice(0, 500);
     for (const el of els) {
       const bg = getComputedStyle(el).backgroundImage;
@@ -272,6 +283,7 @@
     let bestScore = -1;
     let best = [125, 220, 255];
 
+    // Sample pixels; prefer saturated mid-luminance colors.
     for (let i = 0; i < data.length; i += 16) {
       const r = data[i];
       const g = data[i + 1];
@@ -323,9 +335,11 @@
     }
   }
 
+  // Update on navigation/content changes (SPA) + periodically as a safety net.
   updateDynamicTheme();
   const mo2 = new MutationObserver(() => {
     if (dynamicDebounceHandle) clearTimeout(dynamicDebounceHandle);
+    // Debounce: some pages swap backdrops multiple times.
     dynamicDebounceHandle = setTimeout(updateDynamicTheme, 250);
   });
   mo2.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ["style", "class"] });

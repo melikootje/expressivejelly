@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.0.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.Yuorself", "Jellyfin.Plugin.Yuorself/Jellyfin.Plugin.Yuorself.csproj", "{E79A6B1B-799C-44B2-8CE1-E736B5996351}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.ExpressiveJelly", "Jellyfin.Plugin.ExpressiveJelly/Jellyfin.Plugin.ExpressiveJelly.csproj", "{E79A6B1B-799C-44B2-8CE1-E736B5996351}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,4 +17,3 @@ Global
 		{E79A6B1B-799C-44B2-8CE1-E736B5996351}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
-

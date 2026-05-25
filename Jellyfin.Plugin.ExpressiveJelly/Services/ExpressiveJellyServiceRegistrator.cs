@@ -1,11 +1,11 @@
-using Jellyfin.Plugin.Yuorself.Services;
+using Jellyfin.Plugin.ExpressiveJelly.Services;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Jellyfin.Plugin.Yuorself;
+namespace Jellyfin.Plugin.ExpressiveJelly;
 
-public sealed class YuorselfServiceRegistrator : IPluginServiceRegistrator
+public sealed class ExpressiveJellyServiceRegistrator : IPluginServiceRegistrator
 {
     public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost serverApplicationHost)
     {
