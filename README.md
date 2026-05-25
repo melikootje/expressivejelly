@@ -20,6 +20,12 @@ Includes:
 3. Restart Jellyfin.
 4. Hard refresh the web client (`Ctrl+Shift+R`).
 
+## GitHub build downloads
+
+This repo includes a GitHub Actions workflow that builds the plugin DLL.
+
+- For a stable direct download link, create a tag like `v1.0.0` and GitHub will attach `Jellyfin.Plugin.ExpressiveJelly.dll` to the Release.
+
 ## What it injects
 
 - A stylesheet: `./ExpressiveJelly/theme.css`
