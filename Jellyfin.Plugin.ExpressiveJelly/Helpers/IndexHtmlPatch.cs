@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Jellyfin.Plugin.ExpressiveJelly.Helpers;
@@ -12,6 +14,9 @@ public static class IndexHtmlPatch
 {
     private const string BeginMarker = "<!-- BEGIN ExpressiveJelly Theme -->";
     private const string EndMarker = "<!-- END ExpressiveJelly Theme -->";
+
+    private static readonly Lazy<string> ThemeCss = new(() => ReadEmbeddedText("Jellyfin.Plugin.ExpressiveJelly.Resources.jellyfinexpressive.css"));
+    private static readonly Lazy<string> ThemeJs = new(() => ReadEmbeddedText("Jellyfin.Plugin.ExpressiveJelly.Resources.jellyfinexpressive.js"));
 
     public static string PatchIndexHtml(TransformPayload payload)
     {
@@ -49,13 +54,33 @@ public static class IndexHtmlPatch
 
     private static string BuildInjectionBlock(bool dynamicThemingEnabled)
     {
-        long ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        string dyn = dynamicThemingEnabled ? "1" : "0";
+        string dyn = dynamicThemingEnabled ? "true" : "false";
         return $@"
 {BeginMarker}
-<link rel=""stylesheet"" href=""../ExpressiveJelly/theme.css?v={ts}"" />
-<script defer src=""../ExpressiveJelly/theme.js?dyn={dyn}&v={ts}""></script>
+<style id=""expressivejelly-theme"">
+{ThemeCss.Value}
+</style>
+<script>
+window.__ExpressiveJelly = window.__ExpressiveJelly || {{}};
+window.__ExpressiveJelly.dynamicThemingEnabled = {dyn};
+</script>
+<script id=""expressivejelly-theme-js"">
+{ThemeJs.Value}
+</script>
 {EndMarker}
 ";
+    }
+
+    private static string ReadEmbeddedText(string resourceName)
+    {
+        Assembly asm = typeof(IndexHtmlPatch).Assembly;
+        using Stream? s = asm.GetManifestResourceStream(resourceName);
+        if (s == null)
+        {
+            return string.Empty;
+        }
+
+        using StreamReader r = new StreamReader(s);
+        return r.ReadToEnd();
     }
 }

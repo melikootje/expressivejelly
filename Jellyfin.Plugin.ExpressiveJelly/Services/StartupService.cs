@@ -66,9 +66,18 @@ public sealed class StartupService : IHostedService
 
                     if (registerMethod != null)
                     {
+                        // Give other plugins (Moonfin, HomeScreenSections, etc.) a chance to register their
+                        // own transformations first, so we end up at the tail of the pipeline.
+                        if (attempt < 6)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken).ConfigureAwait(false);
+                        }
+
+                        // Use a fresh ID on each boot so we always register at the end of the pipeline.
+                        // This avoids other plugins overwriting index.html after our transform.
                         JObject payload = new JObject
                         {
-                            ["id"] = ExpressiveJellyPlugin.Instance!.Id,
+                            ["id"] = Guid.NewGuid(),
                             // Regex pattern (escape the dot) so it reliably matches index.html.
                             ["fileNamePattern"] = "index\\.html",
                             ["transformationEndpoint"] = string.Empty,
@@ -78,7 +87,7 @@ public sealed class StartupService : IHostedService
                         };
 
                         registerMethod.Invoke(null, new object?[] { payload });
-                        logger.LogInformation("Registered index.html transformation for ExpressiveJelly web injection.");
+                        logger.LogInformation("Registered index.html transformation for ExpressiveJelly web injection (pipeline tail).");
                         return;
                     }
 

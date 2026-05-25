@@ -5,6 +5,9 @@
   const DYN_ATTR = "data-jfx-dynamic";
 
   function getDynamicThemingEnabled() {
+    if (window.__ExpressiveJelly && typeof window.__ExpressiveJelly.dynamicThemingEnabled === "boolean") {
+      return window.__ExpressiveJelly.dynamicThemingEnabled;
+    }
     try {
       const script = Array.from(document.scripts).find((s) =>
         typeof s.src === "string" && s.src.includes("/ExpressiveJelly/theme.js")
