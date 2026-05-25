@@ -14,36 +14,59 @@ public static class IndexHtmlPatch
 {
     private const string BeginMarker = "<!-- BEGIN ExpressiveJelly Theme -->";
     private const string EndMarker = "<!-- END ExpressiveJelly Theme -->";
+    private static readonly string DebugLogPath = Path.Combine(Path.GetTempPath(), "expressivejelly-patch.log");
 
     private static readonly Lazy<string> ThemeCss = new(() => ReadEmbeddedText("Jellyfin.Plugin.ExpressiveJelly.Resources.jellyfinexpressive.css"));
     private static readonly Lazy<string> ThemeJs = new(() => ReadEmbeddedText("Jellyfin.Plugin.ExpressiveJelly.Resources.jellyfinexpressive.js"));
 
     public static string PatchIndexHtml(TransformPayload payload)
     {
-        if (ExpressiveJellyPlugin.Instance?.Configuration.Enabled != true)
+        try
         {
-            return payload.Contents;
+            WriteDebug("PatchIndexHtml invoked.");
+
+            if (payload == null)
+            {
+                WriteDebug("Payload was null.");
+                return string.Empty;
+            }
+
+            if (ExpressiveJellyPlugin.Instance?.Configuration.Enabled != true)
+            {
+                WriteDebug("Plugin disabled. Returning original contents.");
+                return payload.Contents;
+            }
+
+            string html = payload.Contents ?? string.Empty;
+            WriteDebug($"Incoming HTML length: {html.Length}");
+
+            html = RemoveExistingBlock(html);
+            bool dynamicEnabled = ExpressiveJellyPlugin.Instance?.Configuration.DynamicThemingEnabled != false;
+            string injection = BuildInjectionBlock(dynamicEnabled);
+            WriteDebug($"Injection length: {injection.Length}");
+
+            int headClose = html.LastIndexOf("</head>", StringComparison.OrdinalIgnoreCase);
+            if (headClose >= 0)
+            {
+                WriteDebug("Inserted before </head>.");
+                return html.Insert(headClose, injection);
+            }
+
+            int bodyClose = html.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
+            if (bodyClose >= 0)
+            {
+                WriteDebug("Inserted before </body>.");
+                return html.Insert(bodyClose, injection);
+            }
+
+            WriteDebug("No </head> or </body> found. Appending injection.");
+            return html + injection;
         }
-
-        string html = payload.Contents ?? string.Empty;
-
-        html = RemoveExistingBlock(html);
-        bool dynamicEnabled = ExpressiveJellyPlugin.Instance?.Configuration.DynamicThemingEnabled != false;
-        string injection = BuildInjectionBlock(dynamicEnabled);
-
-        int headClose = html.LastIndexOf("</head>", StringComparison.OrdinalIgnoreCase);
-        if (headClose >= 0)
+        catch (Exception ex)
         {
-            return html.Insert(headClose, injection);
+            WriteDebug($"PatchIndexHtml failed: {ex}");
+            return payload?.Contents ?? string.Empty;
         }
-
-        int bodyClose = html.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
-        if (bodyClose >= 0)
-        {
-            return html.Insert(bodyClose, injection);
-        }
-
-        return html + injection;
     }
 
     private static string RemoveExistingBlock(string html)
@@ -82,5 +105,16 @@ window.__ExpressiveJelly.dynamicThemingEnabled = {dyn};
 
         using StreamReader r = new StreamReader(s);
         return r.ReadToEnd();
+    }
+
+    private static void WriteDebug(string message)
+    {
+        try
+        {
+            File.AppendAllText(DebugLogPath, $"[{DateTimeOffset.UtcNow:O}] {message}{Environment.NewLine}");
+        }
+        catch
+        {
+        }
     }
 }
