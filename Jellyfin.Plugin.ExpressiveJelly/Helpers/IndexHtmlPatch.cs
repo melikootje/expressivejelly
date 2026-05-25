@@ -53,8 +53,8 @@ public static class IndexHtmlPatch
         string dyn = dynamicThemingEnabled ? "1" : "0";
         return $@"
 {BeginMarker}
-<link rel=""stylesheet"" href=""./ExpressiveJelly/theme.css?v={ts}"" />
-<script defer src=""./ExpressiveJelly/theme.js?dyn={dyn}&v={ts}""></script>
+<link rel=""stylesheet"" href=""../ExpressiveJelly/theme.css?v={ts}"" />
+<script defer src=""../ExpressiveJelly/theme.js?dyn={dyn}&v={ts}""></script>
 {EndMarker}
 ";
     }
