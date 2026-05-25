@@ -18,61 +18,6 @@ public static class IndexHtmlPatch
 
     private static readonly Lazy<string> ThemeCss = new(() => ReadEmbeddedText("Jellyfin.Plugin.ExpressiveJelly.Resources.jellyfinexpressive.css"));
     private static readonly Lazy<string> ThemeJs = new(() => ReadEmbeddedText("Jellyfin.Plugin.ExpressiveJelly.Resources.jellyfinexpressive.js"));
-    private static readonly string RecoveryScript = @"
-(function () {
-  var reloadKey = '__expressivejelly_chunk_recover__';
-  async function recover(reason) {
-    try {
-      if (sessionStorage.getItem(reloadKey) === '1') {
-        return;
-      }
-      sessionStorage.setItem(reloadKey, '1');
-      if ('serviceWorker' in navigator) {
-        var regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(function (reg) { return reg.unregister(); }));
-      }
-      if ('caches' in window) {
-        var keys = await caches.keys();
-        await Promise.all(keys.map(function (key) { return caches.delete(key); }));
-      }
-    } catch (_) {
-    }
-
-    try {
-      var url = new URL(location.href);
-      url.searchParams.set('_ej_reload', String(Date.now()));
-      url.searchParams.set('_ej_reason', reason || 'chunk');
-      location.replace(url.toString());
-    } catch (_) {
-      location.reload();
-    }
-  }
-
-  window.addEventListener('unhandledrejection', function (event) {
-    var message = String((event && event.reason && (event.reason.message || event.reason.name)) || '');
-    if (message.indexOf('ChunkLoadError') !== -1) {
-      recover('chunkload');
-    }
-  });
-
-  window.addEventListener('error', function (event) {
-    var filename = String((event && event.filename) || '');
-    var message = String((event && event.message) || '');
-    if (filename.indexOf('session-login-index-html') !== -1 && message.indexOf('expected expression') !== -1) {
-      recover('syntax');
-    }
-  }, true);
-
-  window.addEventListener('pageshow', function () {
-    try {
-      if (sessionStorage.getItem(reloadKey) === '1') {
-        sessionStorage.removeItem(reloadKey);
-      }
-    } catch (_) {
-    }
-  });
-})();";
-
     public static string PatchIndexHtml(TransformPayload payload)
     {
         try
@@ -93,6 +38,12 @@ public static class IndexHtmlPatch
 
             string html = payload.Contents ?? string.Empty;
             WriteDebug($"Incoming HTML length: {html.Length}");
+
+            if (!LooksLikeHtmlDocument(html))
+            {
+                WriteDebug("Payload does not look like an HTML document. Returning original contents.");
+                return payload.Contents;
+            }
 
             html = RemoveExistingBlock(html);
             bool dynamicEnabled = ExpressiveJellyPlugin.Instance?.Configuration.DynamicThemingEnabled != false;
@@ -129,6 +80,20 @@ public static class IndexHtmlPatch
         return Regex.Replace(html, pattern, string.Empty, RegexOptions.IgnoreCase);
     }
 
+    private static bool LooksLikeHtmlDocument(string contents)
+    {
+        if (string.IsNullOrWhiteSpace(contents))
+        {
+            return false;
+        }
+
+        string sample = contents.Length > 4096 ? contents[..4096] : contents;
+        return sample.Contains("<html", StringComparison.OrdinalIgnoreCase)
+            || sample.Contains("<head", StringComparison.OrdinalIgnoreCase)
+            || sample.Contains("<body", StringComparison.OrdinalIgnoreCase)
+            || sample.Contains("<!DOCTYPE html", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string BuildInjectionBlock(bool dynamicThemingEnabled)
     {
         string dyn = dynamicThemingEnabled ? "true" : "false";
@@ -140,7 +105,6 @@ public static class IndexHtmlPatch
 <script>
 window.__ExpressiveJelly = window.__ExpressiveJelly || {{}};
 window.__ExpressiveJelly.dynamicThemingEnabled = {dyn};
-{RecoveryScript}
 </script>
 <script id=""expressivejelly-theme-js"">
 {ThemeJs.Value}
