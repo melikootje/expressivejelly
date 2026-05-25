@@ -78,8 +78,10 @@ public sealed class StartupService : IHostedService
                         JObject payload = new JObject
                         {
                             ["id"] = Guid.NewGuid(),
-                            // Regex pattern (escape the dot) so it reliably matches index.html.
-                            ["fileNamePattern"] = "index\\.html",
+                            // File Transformation prefers an exact-match pipeline for index.html.
+                            // If we register a regex key here, it gets skipped once other plugins
+                            // have already registered the exact key.
+                            ["fileNamePattern"] = "index.html",
                             ["transformationEndpoint"] = string.Empty,
                             ["callbackAssembly"] = typeof(IndexHtmlPatch).Assembly.FullName,
                             ["callbackClass"] = typeof(IndexHtmlPatch).FullName,
