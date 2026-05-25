@@ -28,7 +28,11 @@ public sealed class StartupService : IHostedService
             return Task.CompletedTask;
         }
 
-        TryRegisterFileTransformation(_logger);
+        _ = Task.Run(async () =>
+        {
+            await TryRegisterFileTransformationWithRetries(_logger, cancellationToken).ConfigureAwait(false);
+        }, cancellationToken);
+
         return Task.CompletedTask;
     }
 
@@ -37,50 +41,69 @@ public sealed class StartupService : IHostedService
         return Task.CompletedTask;
     }
 
-    private static void TryRegisterFileTransformation(ILogger logger)
+    private static async Task TryRegisterFileTransformationWithRetries(ILogger logger, CancellationToken cancellationToken)
     {
-        try
+        // File Transformation may load after us; retry briefly so injection still registers.
+        for (int attempt = 1; attempt <= 25 && !cancellationToken.IsCancellationRequested; attempt++)
         {
-            Assembly? fileTransformationAssembly = AssemblyLoadContext.All
-                .SelectMany(x => x.Assemblies)
-                .FirstOrDefault(x => (x.FullName ?? string.Empty).Contains("Jellyfin.Plugin.FileTransformation", StringComparison.OrdinalIgnoreCase));
-
-            if (fileTransformationAssembly == null)
+            try
             {
-                logger.LogWarning("File Transformation plugin not found; theme injection will not run.");
-                return;
+                Assembly? fileTransformationAssembly = AssemblyLoadContext.All
+                    .SelectMany(x => x.Assemblies)
+                    .FirstOrDefault(x => (x.FullName ?? string.Empty).Contains(".FileTransformation", StringComparison.OrdinalIgnoreCase));
+
+                if (fileTransformationAssembly == null)
+                {
+                    if (attempt == 1)
+                    {
+                        logger.LogWarning("File Transformation plugin not found yet; will retry.");
+                    }
+                }
+                else
+                {
+                    Type? pluginInterfaceType = fileTransformationAssembly.GetType("Jellyfin.Plugin.FileTransformation.PluginInterface");
+                    MethodInfo? registerMethod = pluginInterfaceType?.GetMethod("RegisterTransformation");
+
+                    if (registerMethod != null)
+                    {
+                        JObject payload = new JObject
+                        {
+                            ["id"] = ExpressiveJellyPlugin.Instance!.Id,
+                            // Regex pattern (escape the dot) so it reliably matches index.html.
+                            ["fileNamePattern"] = "index\\.html",
+                            ["transformationEndpoint"] = string.Empty,
+                            ["callbackAssembly"] = typeof(IndexHtmlPatch).Assembly.FullName,
+                            ["callbackClass"] = typeof(IndexHtmlPatch).FullName,
+                            ["callbackMethod"] = nameof(IndexHtmlPatch.PatchIndexHtml),
+                        };
+
+                        registerMethod.Invoke(null, new object?[] { payload });
+                        logger.LogInformation("Registered index.html transformation for ExpressiveJelly web injection.");
+                        return;
+                    }
+
+                    if (attempt == 1)
+                    {
+                        logger.LogWarning("File Transformation PluginInterface is present but RegisterTransformation is missing; will retry.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Common if FileTransformationPlugin.Instance/ServiceProvider isn't ready yet.
+                logger.LogWarning(ex, "ExpressiveJelly failed to register File Transformation (attempt {Attempt}/25); will retry.", attempt);
             }
 
-            Type? pluginInterfaceType = fileTransformationAssembly.GetType("Jellyfin.Plugin.FileTransformation.PluginInterface");
-            if (pluginInterfaceType == null)
+            try
             {
-                logger.LogWarning("File Transformation PluginInterface type not found; theme injection will not run.");
+                await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
                 return;
             }
-
-            MethodInfo? registerMethod = pluginInterfaceType.GetMethod("RegisterTransformation");
-            if (registerMethod == null)
-            {
-                logger.LogWarning("File Transformation RegisterTransformation method not found; theme injection will not run.");
-                return;
-            }
-
-            JObject payload = new JObject
-            {
-                ["id"] = ExpressiveJellyPlugin.Instance!.Id,
-                ["fileNamePattern"] = "index.html",
-                ["transformationEndpoint"] = "/",
-                ["callbackAssembly"] = typeof(IndexHtmlPatch).Assembly.FullName,
-                ["callbackClass"] = typeof(IndexHtmlPatch).FullName,
-                ["callbackMethod"] = nameof(IndexHtmlPatch.PatchIndexHtml),
-            };
-
-            registerMethod.Invoke(null, new object?[] { payload });
-            logger.LogInformation("Registered index.html transformation for ExpressiveJelly web injection.");
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to register File Transformation for ExpressiveJelly.");
-        }
+
+        logger.LogError("ExpressiveJelly could not register with File Transformation after multiple attempts; web injection will not run.");
     }
 }
