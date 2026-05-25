@@ -1,0 +1,288 @@
+/* This file is embedded and served by /Yuorself/theme.css
+   Source is derived from dist/jellyfinexpressive.css in this repo.
+*/
+
+/* JellyfinExpressive — Material You Expressive-inspired theme
+   - expressive radii & elevation
+   - richer accents (incl. "third accent")
+   - punchier typography + motion
+   - translucent surfaces (when supported)
+*/
+
+:root{
+  color-scheme: dark;
+
+  /* Accents (edit these) */
+  --jfx-accent: #7ddcff;
+  --jfx-accent2: #c4b5ff;
+  --jfx-accent3: #ff6bd6;
+
+  /* Surfaces */
+  --jfx-bg: #0b0c0f;
+  --jfx-surface0: color-mix(in oklab, #10131a 90%, var(--jfx-accent) 10%);
+  --jfx-surface1: color-mix(in oklab, #141826 90%, var(--jfx-accent2) 10%);
+  --jfx-surface2: color-mix(in oklab, #1a1f31 90%, var(--jfx-accent3) 10%);
+
+  --jfx-text: #eef2ff;
+  --jfx-text-dim: color-mix(in oklab, var(--jfx-text) 72%, #000 28%);
+  --jfx-border: color-mix(in oklab, #ffffff 10%, var(--jfx-accent) 12%, transparent);
+
+  /* Shape */
+  --jfx-radius-s: 10px;
+  --jfx-radius-m: 14px;
+  --jfx-radius-l: 18px;
+  --jfx-radius-xl: 26px;
+  --jfx-radius-2xl: 34px;
+
+  /* Elevation (soft, expressive) */
+  --jfx-shadow-1: 0 10px 30px rgba(0,0,0,.35);
+  --jfx-shadow-2: 0 18px 60px rgba(0,0,0,.45);
+
+  /* Motion */
+  --jfx-ease-out: cubic-bezier(.2, .8, .2, 1);
+  --jfx-dur-1: 140ms;
+  --jfx-dur-2: 240ms;
+  --jfx-dur-3: 420ms;
+
+  /* Focus */
+  --jfx-focus: 0 0 0 3px color-mix(in oklab, var(--jfx-accent) 55%, transparent);
+}
+
+@media (prefers-color-scheme: light){
+  :root{
+    color-scheme: light;
+    --jfx-bg: #fbfbff;
+    --jfx-text: #0b1020;
+    --jfx-text-dim: color-mix(in oklab, var(--jfx-text) 72%, #fff 28%);
+    --jfx-surface0: color-mix(in oklab, #ffffff 92%, var(--jfx-accent) 8%);
+    --jfx-surface1: color-mix(in oklab, #ffffff 88%, var(--jfx-accent2) 12%);
+    --jfx-surface2: color-mix(in oklab, #ffffff 82%, var(--jfx-accent3) 18%);
+    --jfx-border: color-mix(in oklab, #000000 10%, var(--jfx-accent) 10%, transparent);
+    --jfx-shadow-1: 0 12px 30px rgba(10,16,32,.10);
+    --jfx-shadow-2: 0 24px 60px rgba(10,16,32,.14);
+  }
+}
+
+/* Global baseline */
+html, body{
+  background: radial-gradient(1200px 800px at 15% -10%, color-mix(in oklab, var(--jfx-accent3) 30%, transparent) 0%, transparent 60%),
+              radial-gradient(1000px 700px at 85% 0%, color-mix(in oklab, var(--jfx-accent) 24%, transparent) 0%, transparent 62%),
+              var(--jfx-bg) !important;
+  color: var(--jfx-text) !important;
+}
+
+body, button, input, select, textarea{
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+}
+
+/* Links */
+a{
+  color: color-mix(in oklab, var(--jfx-accent) 78%, var(--jfx-text) 22%) !important;
+  text-decoration-thickness: .12em;
+  text-underline-offset: .18em;
+}
+
+/* Expressive “glass” surfaces for common Jellyfin/Emby containers.
+   These selectors intentionally include multiple known Jellyfin Web classnames.
+*/
+.mainDrawer,
+.dialog,
+.promptDialog,
+.paperList,
+.paperListItem,
+.detailPagePrimaryContainer,
+.detailPageContent,
+.page,
+.pageContent,
+.content-primary,
+.content-primary > div,
+.formDialogContent,
+.itemDetailPage{
+  background: color-mix(in oklab, var(--jfx-surface0) 88%, transparent) !important;
+  border: 1px solid var(--jfx-border) !important;
+  border-radius: var(--jfx-radius-xl) !important;
+  box-shadow: var(--jfx-shadow-1) !important;
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+
+/* Cards */
+.card,
+.cardScalable,
+.cardBox,
+.cardContent,
+.itemCard,
+.listItem,
+.listItemBody,
+.raised,
+.paper-icon-button-light,
+.emby-button,
+.button,
+.btn,
+.button-submit,
+.raised.emby-button{
+  border-radius: var(--jfx-radius-l) !important;
+}
+
+.cardScalable,
+.cardBox,
+.itemCard,
+.raised{
+  border: 1px solid color-mix(in oklab, var(--jfx-border) 75%, transparent) !important;
+  background: color-mix(in oklab, var(--jfx-surface1) 84%, transparent) !important;
+  box-shadow: var(--jfx-shadow-1) !important;
+  transition: transform var(--jfx-dur-2) var(--jfx-ease-out),
+              box-shadow var(--jfx-dur-2) var(--jfx-ease-out),
+              background var(--jfx-dur-2) var(--jfx-ease-out);
+}
+
+.cardScalable:hover,
+.cardBox:hover,
+.itemCard:hover,
+.raised:hover{
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: var(--jfx-shadow-2) !important;
+  background: color-mix(in oklab, var(--jfx-surface2) 74%, transparent) !important;
+}
+
+/* Buttons (pill + expressive hover) */
+.emby-button,
+.button,
+.btn,
+button{
+  border-radius: 999px !important;
+  transition: transform var(--jfx-dur-1) var(--jfx-ease-out),
+              background var(--jfx-dur-1) var(--jfx-ease-out),
+              box-shadow var(--jfx-dur-1) var(--jfx-ease-out);
+}
+
+.emby-button:focus-visible,
+.button:focus-visible,
+.btn:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible{
+  outline: none !important;
+  box-shadow: var(--jfx-focus) !important;
+}
+
+.emby-button:hover,
+.button:hover,
+.btn:hover,
+button:hover{
+  transform: translateY(-1px);
+}
+
+/* Primary actions */
+.emby-button.raised,
+.button-submit,
+.btnSubmit{
+  background: linear-gradient(135deg,
+    color-mix(in oklab, var(--jfx-accent) 74%, #000 0%),
+    color-mix(in oklab, var(--jfx-accent3) 64%, #000 0%)
+  ) !important;
+  border: 0 !important;
+}
+
+/* Inputs */
+input, textarea, select{
+  background: color-mix(in oklab, var(--jfx-surface0) 72%, transparent) !important;
+  color: var(--jfx-text) !important;
+  border: 1px solid var(--jfx-border) !important;
+  border-radius: var(--jfx-radius-m) !important;
+}
+
+/* Headings: slightly more “expressive” */
+h1,h2,h3,.sectionTitle,.headerTitle{
+  letter-spacing: -0.02em;
+}
+
+/* App bars / navigation (best-effort selectors) */
+.header,
+.topTabs,
+.tabsBar,
+.mainDrawer{
+  border-radius: var(--jfx-radius-2xl) !important;
+}
+
+.header{
+  background: color-mix(in oklab, var(--jfx-surface1) 80%, transparent) !important;
+  border: 1px solid var(--jfx-border) !important;
+  box-shadow: var(--jfx-shadow-1) !important;
+  backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+}
+
+.navMenuOption,
+.navMenuOptionText,
+.mainDrawer .listItem,
+.mainDrawer .paperListItem{
+  border-radius: 999px !important;
+}
+.navMenuOption:hover,
+.mainDrawer .listItem:hover,
+.mainDrawer .paperListItem:hover{
+  background: color-mix(in oklab, var(--jfx-accent2) 14%, transparent) !important;
+}
+
+/* Sliders / progress (non-video) */
+input[type="range"],
+.slider,
+.mdl-slider__container{
+  accent-color: var(--jfx-accent);
+}
+
+/* Scrollbars (best-effort) */
+*{
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--jfx-accent) 55%, transparent) transparent;
+}
+*::-webkit-scrollbar{ width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb{
+  background: color-mix(in oklab, var(--jfx-accent2) 45%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Optional: squiggle progressbar hook (used by the companion JS). */
+.jfx-squigglebar{
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  height: 6px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity var(--jfx-dur-2) var(--jfx-ease-out), transform var(--jfx-dur-2) var(--jfx-ease-out);
+}
+.jfx-squigglebar[data-visible="true"]{
+  opacity: 1;
+  transform: translateY(0);
+}
+.jfx-squigglebar .jfx-track{
+  height: 100%;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--jfx-text) 14%, transparent);
+  overflow: hidden;
+}
+.jfx-squigglebar .jfx-fill{
+  height: 100%;
+  width: var(--jfx-progress, 0%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--jfx-accent), var(--jfx-accent3));
+  transition: width var(--jfx-dur-2) var(--jfx-ease-out);
+}
+.jfx-squigglebar[data-mode="buffering"] .jfx-fill{
+  filter: url(#jfxSquiggle);
+  transform-origin: left center;
+  animation: jfx-squiggle-pulse 900ms var(--jfx-ease-out) infinite alternate;
+}
+@keyframes jfx-squiggle-pulse{
+  from{ transform: scaleY(1); }
+  to{ transform: scaleY(1.45); }
+}
+
