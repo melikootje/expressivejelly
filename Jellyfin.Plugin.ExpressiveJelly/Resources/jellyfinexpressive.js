@@ -3,6 +3,15 @@
 (() => {
   const BAR_CLASS = "jfx-squigglebar";
   const DYN_ATTR = "data-jfx-dynamic";
+  let booted = false;
+  let dynamicEnabled = false;
+  let root = null;
+  let baseAccent = "#7ddcff";
+  let baseAccent2 = "#c4b5ff";
+  let baseAccent3 = "#ff6bd6";
+  let lastArtworkUrl = null;
+  let pending = null;
+  let dynamicDebounceHandle = null;
 
   function getDynamicThemingEnabled() {
     if (window.__ExpressiveJelly && typeof window.__ExpressiveJelly.dynamicThemingEnabled === "boolean") {
@@ -134,25 +143,6 @@
     document.querySelectorAll("video").forEach(attachToVideo);
   }
 
-  scan();
-  const mo = new MutationObserver(() => scan());
-  mo.observe(document.documentElement, { subtree: true, childList: true });
-
-  // Dynamic theming (Kaleidochromic-style "accent variables", but driven by current item artwork)
-  const dynamicEnabled = getDynamicThemingEnabled();
-  if (!dynamicEnabled) return;
-
-  const root = document.documentElement;
-  if (!root.hasAttribute(DYN_ATTR)) root.setAttribute(DYN_ATTR, "on");
-
-  const baseAccent = getComputedStyle(root).getPropertyValue("--jfx-accent").trim() || "#7ddcff";
-  const baseAccent2 = getComputedStyle(root).getPropertyValue("--jfx-accent2").trim() || "#c4b5ff";
-  const baseAccent3 = getComputedStyle(root).getPropertyValue("--jfx-accent3").trim() || "#ff6bd6";
-
-  let lastArtworkUrl = null;
-  let pending = null;
-  let dynamicDebounceHandle = null;
-
   function clamp01(v) {
     return Math.max(0, Math.min(1, v));
   }
@@ -252,6 +242,7 @@
   }
 
   function applyAccents(accent, accent2, accent3) {
+    if (!root) return;
     root.style.setProperty("--jfx-accent", accent);
     root.style.setProperty("--jfx-accent2", accent2);
     root.style.setProperty("--jfx-accent3", accent3);
@@ -314,6 +305,7 @@
   }
 
   async function updateDynamicTheme() {
+    if (!dynamicEnabled) return;
     const url = pickArtworkUrl();
     if (!url) {
       resetAccents();
@@ -338,14 +330,51 @@
     }
   }
 
-  // Update on navigation/content changes (SPA) + periodically as a safety net.
-  updateDynamicTheme();
-  const mo2 = new MutationObserver(() => {
-    if (dynamicDebounceHandle) clearTimeout(dynamicDebounceHandle);
-    // Debounce: some pages swap backdrops multiple times.
-    dynamicDebounceHandle = setTimeout(updateDynamicTheme, 250);
-  });
-  mo2.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ["style", "class"] });
-  window.addEventListener("hashchange", updateDynamicTheme, { passive: true });
-  window.addEventListener("popstate", updateDynamicTheme, { passive: true });
+  function start() {
+    if (booted) return;
+    if (!document.documentElement || !document.body) return;
+    booted = true;
+
+    scan();
+    const mo = new MutationObserver(() => scan());
+    mo.observe(document.documentElement, { subtree: true, childList: true });
+
+    dynamicEnabled = getDynamicThemingEnabled();
+    if (!dynamicEnabled) return;
+
+    root = document.documentElement;
+    if (!root.hasAttribute(DYN_ATTR)) root.setAttribute(DYN_ATTR, "on");
+
+    baseAccent = getComputedStyle(root).getPropertyValue("--jfx-accent").trim() || "#7ddcff";
+    baseAccent2 = getComputedStyle(root).getPropertyValue("--jfx-accent2").trim() || "#c4b5ff";
+    baseAccent3 = getComputedStyle(root).getPropertyValue("--jfx-accent3").trim() || "#ff6bd6";
+
+    updateDynamicTheme();
+    const mo2 = new MutationObserver(() => {
+      if (dynamicDebounceHandle) clearTimeout(dynamicDebounceHandle);
+      dynamicDebounceHandle = setTimeout(updateDynamicTheme, 250);
+    });
+    mo2.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ["style", "class"] });
+    window.addEventListener("hashchange", updateDynamicTheme, { passive: true });
+    window.addEventListener("popstate", updateDynamicTheme, { passive: true });
+  }
+
+  function scheduleStart() {
+    const run = () => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          start();
+        });
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", run, { once: true });
+      return;
+    }
+
+    run();
+  }
+
+  scheduleStart();
 })();
