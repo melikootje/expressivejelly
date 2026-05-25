@@ -119,6 +119,69 @@ a{
   -webkit-backdrop-filter: none !important;
 }
 
+/* Login page: keep the expressive background, but isolate the actual auth UI
+   from the broader component styling so Moonfin/Jellyfin can render it reliably. */
+#loginPage,
+#loginPage.page,
+#loginPage .pageContent{
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  min-height: 100vh !important;
+  padding: 10vh 1rem 2rem !important;
+}
+
+#loginPage .readOnlyContent,
+#loginPage .manualLoginForm,
+#loginPage form,
+#loginPage .loginForm,
+#loginPage .connectLogin{
+  width: min(30rem, calc(100vw - 2rem)) !important;
+  max-width: 30rem !important;
+  margin: 0 auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+#loginPage .readOnlyContent,
+#loginPage .manualLoginForm,
+#loginPage .loginForm,
+#loginPage .connectLogin{
+  position: relative !important;
+  z-index: 2 !important;
+  padding: 1.5rem !important;
+  background: color-mix(in oklab, var(--jfx-surface0) 90%, transparent) !important;
+  border: 1px solid var(--jfx-border) !important;
+  border-radius: var(--jfx-radius-2xl) !important;
+  box-shadow: var(--jfx-shadow-2) !important;
+  backdrop-filter: blur(18px) saturate(1.25) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.25) !important;
+}
+
+#loginPage h1,
+#loginPage h2,
+#loginPage h3,
+#loginPage label,
+#loginPage .sectionTitle,
+#loginPage .inputLabel,
+#loginPage .fieldDescription,
+#loginPage .checkboxLabel,
+#loginPage .btnForgotPassword,
+#loginPage .btnQuick{
+  color: var(--jfx-text) !important;
+  opacity: 1 !important;
+}
+
+#loginPage input,
+#loginPage select,
+#loginPage textarea,
+#loginPage button,
+#loginPage .emby-button,
+#loginPage .raised{
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
 /* Cards */
 .card,
 .cardScalable,
